@@ -1,0 +1,39 @@
+{
+  "project": "VisionGuard",
+  "categories": {
+    "bottle": {
+      "image_auroc": 0.929,
+      "pixel_auroc": 0.954,
+      "f1": 0.87
+    },
+    "cable": {
+      "image_auroc": 0.778,
+      "pixel_auroc": 0.915,
+      "f1": 0.706
+    },
+    "carpet": {
+      "image_auroc": 0.939,
+      "pixel_auroc": 0.958,
+      "f1": 0.912
+    },
+    "wood": {
+      "image_auroc": 0.983,
+      "pixel_auroc": 0.923,
+      "f1": 0.959
+    },
+    "screw": {
+      "image_auroc": 0.544,
+      "pixel_auroc": 0.97,
+      "f1": 0.254
+    }
+  },
+  "tech_stack": [
+    "PyTorch",
+    "Wide ResNet-50",
+    "CLIP",
+    "MVTec AD",
+    "Gradio",
+    "scikit-learn"
+  ],
+  "status": "Complete \u2014 Gradio demo working"
+}

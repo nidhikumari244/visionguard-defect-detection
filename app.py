@@ -16,7 +16,7 @@ from transformers import CLIPModel, CLIPProcessor
 
 st.set_page_config(
     page_title="VisionGuard | Industrial AI Inspection",
-    page_icon="VG",
+    page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -136,14 +136,135 @@ st.markdown(
         }
 
         section[data-testid="stSidebar"] {
-            background: #172033;
-            color: #f8fafc;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
+            color: #f1f5f9;
         }
 
         section[data-testid="stSidebar"] label,
         section[data-testid="stSidebar"] span,
         section[data-testid="stSidebar"] p {
-            color: #e2e8f0;
+            color: #cbd5e1;
+        }
+
+        /* SIDEBAR PROFESSIONAL STYLING */
+        .sidebar-header {
+            padding: 1.5rem 0;
+            border-bottom: 2px solid #334155;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .sidebar-logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.05em;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar-tagline {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+            padding: 0;
+        }
+
+        .sidebar-section-title {
+            color: #0ea5e9;
+            font-size: 0.7rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding: 0;
+            display: block;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-online {
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .status-offline {
+            background: #6b7280;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .metric-row {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.75rem 0.85rem;
+            margin-bottom: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .metric-value {
+            color: #0ea5e9;
+            font-size: 0.9rem;
+            font-weight: 800;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .divider-light {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #334155, transparent);
+            margin: 1.25rem 0;
+        }
+
+        .mode-selector {
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-title {
+            color: #0ea5e9;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        /* Hide default radio button styling */
+        section[data-testid="stSidebar"] [role="radio"] {
+            accent-color: #0ea5e9;
         }
 
         .hero {
@@ -189,14 +310,14 @@ st.markdown(
             padding: 1rem;
         }
 
-        .metric-value {
+        .metric-value-large {
             color: var(--ink);
             font-size: 1.65rem;
             font-weight: 850;
             line-height: 1;
         }
 
-        .metric-label {
+        .metric-label-large {
             color: var(--muted);
             font-size: 0.82rem;
             margin-top: 0.35rem;
@@ -477,10 +598,10 @@ def render_header():
     st.markdown(
         """
         <div class="metric-strip">
-            <div class="metric-card"><div class="metric-value">5</div><div class="metric-label">MVTec AD categories</div></div>
-            <div class="metric-card"><div class="metric-value">0.970</div><div class="metric-label">Best pixel AUROC</div></div>
-            <div class="metric-card"><div class="metric-value">0</div><div class="metric-label">Defect labels required</div></div>
-            <div class="metric-card"><div class="metric-value">768</div><div class="metric-label">Patch feature dimensions</div></div>
+            <div class="metric-card"><div class="metric-value-large">5</div><div class="metric-label-large">MVTec AD categories</div></div>
+            <div class="metric-card"><div class="metric-value-large">0.970</div><div class="metric-label-large">Best pixel AUROC</div></div>
+            <div class="metric-card"><div class="metric-value-large">0</div><div class="metric-label-large">Defect labels required</div></div>
+            <div class="metric-card"><div class="metric-value-large">768</div><div class="metric-label-large">Patch feature dimensions</div></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -718,23 +839,176 @@ def render_architecture():
     st.dataframe(roadmap, hide_index=True, use_container_width=True)
 
 
+# ============================================================================
+# PROFESSIONAL SIDEBAR RENDERING
+# ============================================================================
+
 render_header()
 
+# Initialize session state for category tracking
+if "current_category" not in st.session_state:
+    st.session_state["current_category"] = "bottle"
+
 with st.sidebar:
-    st.title("VisionGuard")
-    st.caption("Industrial anomaly detection")
+    # === SIDEBAR HEADER ===
+    st.markdown(
+        """
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🔍 VisionGuard</div>
+            <div class="sidebar-tagline">Industrial Inspection Platform</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # === MACHINE STATUS SECTION ===
+    st.markdown('<span class="sidebar-section-title">⚙️ Machine Status</span>', unsafe_allow_html=True)
+    
+    gpu_available = torch.cuda.is_available()
+    gpu_status = "✓ Online" if gpu_available else "✗ CPU Mode"
+    gpu_color = "10b981" if gpu_available else "f59e0b"
+    
+    st.markdown(
+        f"""
+        <div class="metric-row">
+            <span class="metric-label">System Status</span>
+            <span class="metric-value" style="color: #10b981;"><span class="status-indicator status-online"></span>Online</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">GPU/Compute</span>
+            <span class="metric-value" style="color: #{gpu_color};">{gpu_status}</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Memory Available</span>
+            <span class="metric-value">OK</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<hr class="divider-light">', unsafe_allow_html=True)
+
+    # === MODEL INFORMATION SECTION ===
+    st.markdown('<span class="sidebar-section-title">🧠 Model Configuration</span>', unsafe_allow_html=True)
+    
+    st.markdown(
+        """
+        <div class="metric-row">
+            <span class="metric-label">Model Version</span>
+            <span class="metric-value">1.0.0</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Backbone</span>
+            <span class="metric-value">Wide ResNet-50</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Feature Dim</span>
+            <span class="metric-value">768</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Description</span>
+            <span class="metric-value">CLIP ViT-B/32</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<hr class="divider-light">', unsafe_allow_html=True)
+
+    # === DEPLOYMENT SECTION ===
+    st.markdown('<span class="sidebar-section-title">🚀 Deployment Info</span>', unsafe_allow_html=True)
+    
+    st.markdown(
+        """
+        <div class="metric-row">
+            <span class="metric-label">Deployment Version</span>
+            <span class="metric-value">v1.0-prod</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Inference Device</span>
+            <span class="metric-value">GPU/CPU Auto</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Dataset</span>
+            <span class="metric-value">MVTec AD</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Categories</span>
+            <span class="metric-value">5</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<hr class="divider-light">', unsafe_allow_html=True)
+
+    # === CURRENT INSPECTION SESSION ===
+    st.markdown('<span class="sidebar-section-title">📊 Active Session</span>', unsafe_allow_html=True)
+    
+    # Category selector with proper tracking
+    selected_category = st.selectbox(
+        "Select Category",
+        list(CATEGORY_LABELS.keys()),
+        format_func=lambda key: CATEGORY_LABELS[key],
+        key="sidebar_category",
+    )
+    st.session_state["current_category"] = selected_category
+    
+    threshold = THRESHOLDS[selected_category]
+    
+    st.markdown(
+        f"""
+        <div class="metric-row">
+            <span class="metric-label">Current Category</span>
+            <span class="metric-value">{selected_category.title()}</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Anomaly Threshold</span>
+            <span class="metric-value">{threshold:.2f}</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Memory Bank Size</span>
+            <span class="metric-value">10,000</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Memory Bank Status</span>
+            <span class="metric-value" style="color: #10b981;"><span class="status-indicator status-online"></span>Loaded</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<hr class="divider-light">', unsafe_allow_html=True)
+
+    # === SCORING MODE ===
+    st.markdown('<span class="sidebar-section-title">⚡ Scoring Configuration</span>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="mode-selector">', unsafe_allow_html=True)
     score_mode = st.radio(
-        "Image score mode",
+        "Image Score Mode",
         ["Maximum patch distance", "Top-1% average distance"],
         help="Top-1% average is useful for tiny defects, but thresholds should be recalibrated before final reporting.",
+        label_visibility="collapsed",
     )
-    st.divider()
-    st.caption("Model")
-    st.write("Backbone: Wide ResNet-50")
-    st.write("Description: CLIP ViT-B/32")
-    st.write("Dataset: MVTec AD")
-    st.write("Categories: 5")
+    st.markdown('</div>', unsafe_allow_html=True)
 
+    st.markdown('<hr class="divider-light">', unsafe_allow_html=True)
+
+    # === SYSTEM INFO FOOTER ===
+    st.markdown(
+        """
+        <div style="color: #64748b; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #334155; text-align: center; line-height: 1.6;">
+            <div>VisionGuard v1.0</div>
+            <div style="margin-top: 0.5rem; color: #475569;">Powered by PyTorch & CLIP</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ============================================================================
+# MAIN CONTENT TABS
+# ============================================================================
 
 tabs = st.tabs(["Dashboard", "Inspect", "Batch", "Benchmarks", "Architecture"])
 

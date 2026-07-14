@@ -122,19 +122,40 @@ BENCHMARKS = pd.DataFrame(
 )
 
 
-st.markdown(
-    """
+theme_base = "light"
+try:
+    theme_base = str(st.get_option("theme.base")).lower()
+except Exception:
+    theme_base = "light"
+
+is_dark_mode = theme_base == "dark"
+
+bg = "#0f172a" if is_dark_mode else "#f7f8fb"
+panel = "#111827" if is_dark_mode else "#ffffff"
+ink = "#f8fafc" if is_dark_mode else "#1f2937"
+muted = "#cbd5e1" if is_dark_mode else "#475569"
+line = "#334155" if is_dark_mode else "#dbe2ea"
+accent = "#38bdf8" if is_dark_mode else "#1d6f8f"
+accent_2 = "#fb923c" if is_dark_mode else "#8a5a44"
+good = "#34d399" if is_dark_mode else "#0f8b5f"
+bad = "#f87171" if is_dark_mode else "#b42318"
+surface_alt = "#0f172a" if is_dark_mode else "#fafbfc"
+plot_bg = "#0b1220" if is_dark_mode else "#ffffff"
+
+css = """
     <style>
         :root {
-            --bg: #f7f8fb;
-            --panel: #ffffff;
-            --ink: #172033;
-            --muted: #64748b;
-            --line: #dbe2ea;
-            --accent: #1d6f8f;
-            --accent-2: #8a5a44;
-            --good: #0f8b5f;
-            --bad: #b42318;
+            --bg: __BG__;
+            --panel: __PANEL__;
+            --ink: __INK__;
+            --muted: __MUTED__;
+            --line: __LINE__;
+            --accent: __ACCENT__;
+            --accent-2: __ACCENT_2__;
+            --good: __GOOD__;
+            --bad: __BAD__;
+            --surface-alt: __SURFACE_ALT__;
+            --plot-bg: __PLOT_BG__;
         }
 
         .stApp {
@@ -462,7 +483,52 @@ st.markdown(
         .stTabs [data-baseweb="tab"] {
             border-radius: 6px;
             padding: 0.55rem 0.9rem;
-            background: #eef2f7;
+            background: var(--surface-alt);
+            color: var(--ink);
+        }
+
+        .stPlotlyChart .plotly .main-svg,
+        .stPlotlyChart .plotly .svg-container,
+        .stPlotlyChart .plotly .legend,
+        .stPlotlyChart .plotly .modebar {
+            background: var(--plot-bg) !important;
+        }
+
+        .js-plotly-plot .plotly,
+        .js-plotly-plot .plotly div,
+        .stPlotlyChart .plotly .xtick text,
+        .stPlotlyChart .plotly .ytick text,
+        .stPlotlyChart .plotly .axis-title,
+        .stPlotlyChart .plotly .legendtext,
+        .stPlotlyChart .plotly .hovertext {
+            color: var(--ink) !important;
+            fill: var(--ink) !important;
+        }
+
+        div[data-testid="stDataFrame"],
+        div[data-testid="stDataFrame"] .dataframe,
+        div[data-testid="stDataFrame"] table,
+        div[data-testid="stDataFrame"] th,
+        div[data-testid="stDataFrame"] td {
+            color: var(--ink) !important;
+            background-color: var(--panel) !important;
+            border-color: var(--line) !important;
+        }
+
+        div[data-testid="stDataFrame"] .dataframe thead th {
+            background-color: var(--surface-alt) !important;
+            color: var(--ink) !important;
+        }
+
+        div[data-testid="stMetric"] {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            color: var(--ink);
+        }
+
+        div[data-testid="stMetric"] [data-testid="stMetricLabel"],
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+            color: var(--ink) !important;
         }
 
         @media (max-width: 820px) {
@@ -479,9 +545,23 @@ st.markdown(
             }
         }
     </style>
-    """,
-    unsafe_allow_html=True,
+    """
+
+css = (
+    css.replace("__BG__", bg)
+    .replace("__PANEL__", panel)
+    .replace("__INK__", ink)
+    .replace("__MUTED__", muted)
+    .replace("__LINE__", line)
+    .replace("__ACCENT__", accent)
+    .replace("__ACCENT_2__", accent_2)
+    .replace("__GOOD__", good)
+    .replace("__BAD__", bad)
+    .replace("__SURFACE_ALT__", surface_alt)
+    .replace("__PLOT_BG__", plot_bg)
 )
+
+st.markdown(css, unsafe_allow_html=True)
 
 
 def clean_candidate(text):
@@ -1024,62 +1104,131 @@ def render_dashboard():
 
 
 def render_result(result):
-    decision = "ANOMALY DETECTED" if result["is_anomaly"] else "NORMAL PRODUCT"
-    box_class = "status-anomaly" if result["is_anomaly"] else "status-normal"
-    title_color = "#b42318" if result["is_anomaly"] else "#0f8b5f"
+    decision = "FAIL" if result["is_anomaly"] else "PASS"
+    decision_style = (
+        "background: linear-gradient(135deg, #fef3f2 0%, #fee4e2 100%); color: #b42318; border: 1px solid #fecdca;"
+        if result["is_anomaly"]
+        else "background: linear-gradient(135deg, #ecfdf3 0%, #d1fadf 100%); color: #067647; border: 1px solid #a7f3d0;"
+    )
+    category_label = CATEGORY_LABELS.get(result.get("category", "unknown"), str(result.get("category", "Unknown")).title())
+    inspection_id = f"{str(result.get('category', 'unknown')).upper()}-{str(result.get('timestamp', 'N/A')).replace(' ', '-').replace(':', '')}"
+    recommendation = "Hold for reinspection and containment" if result["is_anomaly"] else "Release to production"
+    best = result.get("descriptions", [{}])[0] if result.get("descriptions") else {"description": "No CLIP description available", "confidence": 0.0}
 
     st.markdown(
         f"""
-        <div class="status-box {box_class}">
-            <p class="status-title" style="color:{title_color};">{decision}</p>
-            <div class="status-detail">
-                Confidence: {result['confidence']} | Score: {result['score']:.4f} |
-                Threshold: {result['threshold']:.2f}
+        <style>
+        .inspection-shell {{
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            margin-bottom: 12px;
+        }}
+        .inspection-badge {{
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }}
+        .inspection-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }}
+        .inspection-card {{
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }}
+        .inspection-label {{
+            font-size: 0.72rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }}
+        .inspection-value {{
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #0f172a;
+        }}
+        .inspection-sub {{
+            font-size: 0.8rem;
+            color: #475569;
+            margin-top: 3px;
+        }}
+        .inspection-desc {{
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }}
+        @media (max-width: 768px) {{
+            .inspection-grid {{ grid-template-columns: 1fr; }}
+        }}
+        </style>
+        <div class="inspection-shell">
+            <div class="inspection-badge" style="{decision_style}">{decision}</div>
+            <div class="inspection-grid">
+                <div class="inspection-card">
+                    <div class="inspection-label">Inspection ID</div>
+                    <div class="inspection-value">{inspection_id}</div>
+                </div>
+                <div class="inspection-card">
+                    <div class="inspection-label">Timestamp</div>
+                    <div class="inspection-value">{result.get('timestamp', 'N/A')}</div>
+                </div>
+                <div class="inspection-card">
+                    <div class="inspection-label">Category</div>
+                    <div class="inspection-value">{category_label}</div>
+                </div>
+                <div class="inspection-card">
+                    <div class="inspection-label">Recommendation</div>
+                    <div class="inspection-value">{recommendation}</div>
+                </div>
+            </div>
+            <div class="inspection-grid">
+                <div class="inspection-card">
+                    <div class="inspection-label">Anomaly Score</div>
+                    <div class="inspection-value">{result['score']:.4f}</div>
+                    <div class="inspection-sub">Threshold: {result['threshold']:.2f}</div>
+                </div>
+                <div class="inspection-card">
+                    <div class="inspection-label">Confidence</div>
+                    <div class="inspection-value">{result.get('confidence', 'N/A')}</div>
+                </div>
+                <div class="inspection-card">
+                    <div class="inspection-label">Max Patch Score</div>
+                    <div class="inspection-value">{result['max_score']:.4f}</div>
+                </div>
+                <div class="inspection-card">
+                    <div class="inspection-label">Top-1% Score</div>
+                    <div class="inspection-value">{result['topk_score']:.4f}</div>
+                </div>
+            </div>
+            <div class="inspection-desc">
+                <div class="inspection-label">CLIP Description</div>
+                <div class="inspection-value">{best['description']}</div>
+                <div class="inspection-sub">{best['confidence'] * 100:.1f}% confidence</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    metric_cols = st.columns(4)
-    metric_cols[0].metric("Inspection score", f"{result['score']:.2f}")
-    metric_cols[1].metric("Threshold", f"{result['threshold']:.2f}")
-    metric_cols[2].metric("Max patch score", f"{result['max_score']:.2f}")
-    metric_cols[3].metric("Top-1% score", f"{result['topk_score']:.2f}")
-
-    image_cols = st.columns(2)
+    image_cols = st.columns([1, 1], gap="small")
     with image_cols[0]:
-        st.image(result["overlay"], caption="Anomaly heatmap overlay", use_container_width=True)
-        st.caption("Red regions indicate high deviation from normal training patches.")
+        st.image(result["image"], caption="Original image", use_container_width=True)
     with image_cols[1]:
-        st.image(result["image"].resize((224, 224)), caption="Original image", use_container_width=True)
-
-    st.subheader("CLIP zero-shot description")
-    best = result["descriptions"][0]
-    st.success(f"{best['description']} ({best['confidence'] * 100:.1f}% confidence)")
-
-    desc_df = pd.DataFrame(
-        [
-            {
-                "Candidate description": item["description"],
-                "Confidence": item["confidence"],
-            }
-            for item in result["descriptions"]
-        ]
-    )
-    st.dataframe(
-        desc_df,
-        column_config={
-            "Confidence": st.column_config.ProgressColumn(
-                "Confidence",
-                format="%.1f",
-                min_value=0,
-                max_value=1,
-            )
-        },
-        hide_index=True,
-        use_container_width=True,
-    )
+        st.image(result["overlay"], caption="Heatmap", use_container_width=True)
 
     report = build_report(result)
     st.download_button(
